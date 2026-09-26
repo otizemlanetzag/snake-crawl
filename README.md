@@ -162,3 +162,11 @@ Check the repository's current license and project files before redistributing o
 Infinity Snake Crawl is an actively developed project.
 
 The crawler architecture can be expanded with additional discovery strategies, indexing, scheduling, storage backends, and crawler engines over time.
+## Licensing
+
+This repository uses two different licenses for different categories of material:
+
+- **DATA.CSV** is licensed under **INFINITY ODL (INFINITY Open Data License)**. See [INFINITY ODL LICENSE.md](./INFINITY%20ODL%20LICENSE.md).
+- **All other project files** are licensed under **INFINITY GOSL (Infinity General Open Source License)**. See [INFINITY GOSL LICENSE.md](./INFINITY%20GOSL%20LICENSE.md).
+
+The two licenses apply to their respective materials only. The license for DATA.CSV does not grant rights to the source code, and the source-code license does not replace the data license.
