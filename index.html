@@ -56,7 +56,7 @@ $("form").onsubmit=async e=>{
  while(queue.length&&rows.length<maxPages&&!stopRequested){
    const current=queue.splice(0,batch);
    try{
-    const r=await fetch("/api/crawl",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({urls:current,max_depth:maxDepth,same_domain:same,seed_host:new URL(seed).host,delay})});
+    const r=await fetch("/api/crawl",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({urls:current,depths:Object.fromEntries(current.map(u=>[u,depths.get(u)||0])),max_depth:maxDepth,same_domain:same,seed_host:new URL(seed).host,delay})});
     const data=await r.json(); if(!r.ok)throw Error(data.error||"API error");
     for(const item of data.results){
       rows.push(item); stats();
