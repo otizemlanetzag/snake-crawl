@@ -1,1 +1,2 @@
-url,final_url,status,content_type,title,description,text,links,depth,crawled_at
+﻿url,final_url,status,content_type,title,description,text,links,depth,crawled_at,content
+https://example.com,https://example.com,200,text/html,Example Domain,,Example Domain Example Domain This domain is for use in documentation examples without needing permission. Avoid use in operations. Learn more,[],0,2026-09-26 07:32:02,
