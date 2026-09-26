@@ -7,7 +7,7 @@ from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
 from .security import safe_public_url, valid_session
 
-USER_AGENT = "SnakeCrawl/1.0 (+https://github.com/otizemlanetzag/snake-crawl)"
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 OPR/120.0.0.0"
 
 class Parser(HTMLParser):
     def __init__(self):
