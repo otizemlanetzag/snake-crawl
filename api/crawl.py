@@ -92,3 +92,4 @@ def main(request):
 
 # Compatibility aliases for Vercel Python runtime detection.
 app = handler
+
