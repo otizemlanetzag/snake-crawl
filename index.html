@@ -3,8 +3,8 @@
 <title>Snake Crawl</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f5f2eb;color:#3e2723;font-family:system-ui,Segoe UI,sans-serif}
-header{padding:30px 7%;background:#efeae0;border-bottom:1px solid #c2a67d}h1{margin:0;font-size:36px}main{max-width:1050px;margin:28px auto;padding:0 18px}
-.card{background:#fffaf2;border:1px solid #c2a67d;border-radius:16px;padding:22px;margin-bottom:18px}
+header{padding:30px 7%;background:#efeae0;border-bottom:1px solid #c2a67d}h1{margin:0;font-size:36px}
+main{max-width:1050px;margin:28px auto;padding:0 18px}.card{background:#fffaf2;border:1px solid #c2a67d;border-radius:16px;padding:22px;margin-bottom:18px}
 .grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px}label{display:block;font-size:13px;font-weight:700;margin:0 0 6px}
 input{width:100%;padding:11px;border:1px solid #c2a67d;border-radius:9px;background:white;font:inherit}
 .actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}button,.download{border:0;border-radius:10px;padding:12px 18px;font:inherit;font-weight:700;cursor:pointer;background:#d2b48c;color:#3e2723;text-decoration:none}
@@ -12,10 +12,25 @@ button.stop{background:#b94a48;color:white}button:disabled{opacity:.5;cursor:not
 .stat{background:#efeae0;border:1px solid #c2a67d;border-radius:12px;padding:14px}.num{font-size:25px;font-weight:800}.muted{opacity:.7;font-size:13px}
 .bar{height:9px;background:#efeae0;border-radius:8px;overflow:hidden;margin-top:15px}.fill{height:100%;width:0;background:#8b6b45;transition:.25s}
 #log{white-space:pre-wrap;max-height:230px;overflow:auto;font-size:13px}.ok{color:#496b45}.err{color:#9d3d39}
-@media(max-width:800px){.grid,.stats{grid-template-columns:1fr 1fr}}@media(max-width:550px){.grid,.stats{grid-template-columns:1fr}}
+#gate{max-width:500px;margin:90px auto}.gate-error{color:#9d3d39;min-height:20px}
+.hidden{display:none}@media(max-width:800px){.grid,.stats{grid-template-columns:1fr 1fr}}@media(max-width:550px){.grid,.stats{grid-template-columns:1fr}}
 </style></head>
-<body><header><h1>🐍 Snake Crawl</h1><div class="muted">Advanced web crawler · Vercel edition</div></header>
-<main>
+<body>
+<header><h1>🐍 Snake Crawl</h1><div class="muted">Advanced web crawler · Control Panel</div></header>
+
+<main id="gate">
+<div class="card">
+<h2>Control Panel</h2>
+<p class="muted">Enter the secret code to open the crawler.</p>
+<form id="login">
+<label>Secret code</label><input id="code" type="password" autocomplete="off" required>
+<div class="actions"><button>Unlock</button></div>
+<p id="loginError" class="gate-error"></p>
+</form>
+</div>
+</main>
+
+<main id="panel" class="hidden">
 <div class="card"><form id="form">
 <div class="grid">
 <div><label>Start URL</label><input id="url" value="https://example.com" required></div>
@@ -38,38 +53,49 @@ button.stop{background:#b94a48;color:white}button:disabled{opacity:.5;cursor:not
 <div class="card"><b>Activity</b><div id="log"></div></div>
 <div class="card"><b>DATA.CSV fields</b><p class="muted">url, final_url, status, content_type, title, description, text, links, depth, crawled_at</p></div>
 </main>
+
 <script>
 const $=id=>document.getElementById(id);
 let queue=[],seen=new Set(),rows=[],running=false,stopRequested=false,depths=new Map();
+
+$("login").onsubmit=async e=>{
+ e.preventDefault();
+ const error=$("loginError"); error.textContent="";
+ try{
+  const r=await fetch("/api/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code:$("code").value})});
+  const data=await r.json();
+  if(data.authenticated){
+   $("gate").classList.add("hidden");$("panel").classList.remove("hidden");$("code").value="";
+  }else error.textContent="Invalid secret code.";
+ }catch{error.textContent="Authentication failed."}
+};
+
 const esc=v=>String(v??"").replaceAll('"','""').replace(/[\r\n]+/g," ");
 function csv(rows){const fields=["url","final_url","status","content_type","title","description","text","links","depth","crawled_at"];return "\ufeff"+[fields,...rows.map(r=>fields.map(f=>r[f]??""))].map(a=>a.map(v=>'"'+esc(v)+'"').join(",")).join("\r\n");}
 function log(s,cls=""){let p=document.createElement("div");p.textContent=s;p.className=cls;$("log").prepend(p)}
-function stats(){ $("visited").textContent=rows.length;$("saved").textContent=rows.length;$("queued").textContent=queue.length;$("errors").textContent=rows.filter(r=>r.status==="error").length;$("fill").style.width=Math.min(100,rows.length/Math.max(1,+$("pages").value)*100)+"%"; }
-function stop(){stopRequested=true}
-$("stop").onclick=stop;
+function stats(){$("visited").textContent=rows.length;$("saved").textContent=rows.length;$("queued").textContent=queue.length;$("errors").textContent=rows.filter(r=>r.status==="error").length;$("fill").style.width=Math.min(100,rows.length/Math.max(1,+$("pages").value)*100)+"%"}
+$("stop").onclick=()=>stopRequested=true;
+
 $("form").onsubmit=async e=>{
- e.preventDefault(); if(running)return;
+ e.preventDefault();if(running)return;
  running=true;stopRequested=false;queue=[];seen=new Set();rows=[];depths=new Map();$("log").textContent="";$("download").hidden=true;
- const seed=$("url").value.trim(); if(!/^https?:\/\//i.test(seed)){alert("URL must start with http:// or https://");running=false;return}
+ const seed=$("url").value.trim();
+ if(!/^https?:\/\//i.test(seed)){alert("URL must start with http:// or https://");running=false;return}
  seen.add(seed);queue.push(seed);depths.set(seed,0);$("start").disabled=true;$("stop").disabled=false;$("message").textContent="Crawling...";
  const maxPages=+$("pages").value,maxDepth=+$("depth").value,batch=Math.min(8,+$("batch").value),delay=+$("delay").value,same=$("same").checked;
  while(queue.length&&rows.length<maxPages&&!stopRequested){
-   const current=queue.splice(0,batch);
-   try{
-    const r=await fetch("/api/crawl",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({urls:current,depths:Object.fromEntries(current.map(u=>[u,depths.get(u)||0])),max_depth:maxDepth,same_domain:same,seed_host:new URL(seed).host,delay})});
-    const data=await r.json(); if(!r.ok)throw Error(data.error||"API error");
-    for(const item of data.results){
-      rows.push(item); stats();
-      if(item.status==="error")log("ERROR: "+item.url+" — "+item.text,"err"); else log(item.status+"  "+item.url,"ok");
-      const d=Number(item.depth||0);
-      if(d<maxDepth)for(const link of (item.links||[])){
-        try{const u=new URL(link,item.final_url||item.url);u.hash="";const n=u.href;
-          if(!seen.has(n)&&(!same||u.host===new URL(seed).host)&&seen.size<maxPages){seen.add(n);queue.push(n);depths.set(n,d+1)}
-        }catch{}
-      }
-    }
-   }catch(err){log("REQUEST ERROR: "+err.message,"err");break}
-   stats(); await new Promise(r=>setTimeout(r,delay*1000));
+  const current=queue.splice(0,batch);
+  try{
+   const r=await fetch("/api/crawl",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({urls:current,depths:Object.fromEntries(current.map(u=>[u,depths.get(u)||0])),max_depth:maxDepth,same_domain:same,seed_host:new URL(seed).host})});
+   const data=await r.json();if(!r.ok)throw Error(data.error||"API error");
+   for(const item of data.results){
+    rows.push(item);stats();
+    if(item.status==="error")log("ERROR: "+item.url+" — "+item.text,"err");else log(item.status+"  "+item.url,"ok");
+    const d=Number(item.depth||0);
+    if(d<maxDepth)for(const link of(item.links||[])){try{const u=new URL(link,item.final_url||item.url);u.hash="";const n=u.href;if(!seen.has(n)&&(!same||u.host===new URL(seed).host)&&seen.size<maxPages){seen.add(n);queue.push(n);depths.set(n,d+1)}}catch{}}
+   }
+  }catch(err){log("REQUEST ERROR: "+err.message,"err");break}
+  stats();await new Promise(r=>setTimeout(r,delay*1000));
  }
  running=false;$("start").disabled=false;$("stop").disabled=true;$("message").textContent=stopRequested?"Stopped":"Completed";
  if(rows.length){const blob=new Blob([csv(rows)],{type:"text/csv;charset=utf-8"});$("download").href=URL.createObjectURL(blob);$("download").download="DATA.CSV";$("download").hidden=false}
