@@ -5,6 +5,7 @@ import random
 import re
 import string
 import urllib.request
+from api.security import safe_public_url
 
 DEFAULT_MAX_SITES = 100
 MAX_BATCH = 10
@@ -28,6 +29,8 @@ def make_candidate(tlds, max_characters=20):
 
 def fetch_candidate(url):
     try:
+        if not safe_public_url(url):
+            return {"url": url, "status": "blocked", "error": "Private or local address blocked"}
         req = urllib.request.Request(url, headers={"User-Agent": "Snake-Crawl/1.0"})
         with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as response:
             status = getattr(response, "status", 200)
