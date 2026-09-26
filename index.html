@@ -113,7 +113,9 @@ $("form").onsubmit=async e=>{
     if(d<maxDepth)for(const link of(item.links||[])){try{const u=new URL(link,item.final_url||item.url);u.hash="";const n=u.href;if(!seen.has(n)&&(!same||u.host===new URL(seed).host)&&seen.size<maxPages){seen.add(n);queue.push(n);depths.set(n,d+1)}}catch{}}
    }
   }catch(err){log("REQUEST ERROR: "+err.message,"err");break}
-  stats();await new Promise(r=>setTimeout(r,delay*1000));
+  stats();
+  if(rows.length){try{await fetch("/api/save_csv",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({rows})})}catch(err){log("DATA.CSV SAVE ERROR: "+err.message,"err")}}
+  await new Promise(r=>setTimeout(r,delay*1000));
  }
  running=false;$("start").disabled=false;$("stop").disabled=true;$("message").textContent=stopRequested?"Stopped":"Completed";
  if(rows.length){const blob=new Blob([csv(rows)],{type:"text/csv;charset=utf-8"});$("download").href=URL.createObjectURL(blob);$("download").download="DATA.CSV";$("download").hidden=false}
@@ -129,5 +131,6 @@ while(advRows.length<total&&!advStop){const count=Math.min(batch,total-advRows.l
 for(const item of data.results||[]){advRows.push(item);const line=document.createElement("div");line.textContent=item.status===200?"FOUND  "+item.url:"ERROR  "+item.url+" — "+(item.error||item.status);line.className=item.status===200?"ok":"err";$("advLog").prepend(line)}
 $("advTested").textContent=advRows.length;$("advFound").textContent=advRows.filter(x=>x.status===200).length;$("advErrors").textContent=advRows.filter(x=>x.status==="error").length;$("advRemaining").textContent=Math.max(0,total-advRows.length);$("advFill").style.width=(advRows.length/total*100)+"%";
 }catch(err){const line=document.createElement("div");line.textContent="REQUEST ERROR: "+err.message;line.className="err";$("advLog").prepend(line);break}if(!advStop)await new Promise(r=>setTimeout(r,delay*1000))}
+if(advRows.length){try{await fetch("/api/save_csv",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({rows:advRows})})}catch(err){const line=document.createElement("div");line.textContent="DATA.CSV SAVE ERROR: "+err.message;line.className="err";$("advLog").prepend(line)}}
 advRunning=false;$("advStart").disabled=false;$("advStop").disabled=true;$("advMessage").textContent=advStop?"Stopped":"Completed";
 if(advRows.length){const fields=["url","final_url","status","content_type","content"];const esc=v=>String(v??"").replaceAll('"','""').replace(/[\r\n]+/g," ");const out="\ufeff"+[fields,...advRows.map(r=>fields.map(f=>r[f]??""))].map(a=>a.map(v=>'"'+esc(v)+'"').join(",")).join("\r\n");$("advDownload").href=URL.createObjectURL(new Blob([out],{type:"text/csv;charset=utf-8"}));$("advDownload").download="Advanced_DATA.CSV";$("advDownload").hidden=false}};</script></body></html>
