@@ -1,0 +1,1 @@
+# Snake Crawl intentionally uses Python's standard library only.
