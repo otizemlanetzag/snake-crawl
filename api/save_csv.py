@@ -5,6 +5,7 @@ import io
 import json
 import os
 import urllib.request
+from .security import valid_session
 
 REPO = os.environ.get("GITHUB_REPOSITORY", "otizemlanetzag/snake-crawl")
 BRANCH = os.environ.get("GITHUB_BRANCH", "main")
@@ -34,6 +35,8 @@ def _csv(rows):
 def main(request):
     if request.method != "POST":
         return {"statusCode":405,"body":json.dumps({"error":"POST required"})}
+    if not valid_session(request):
+        return {"statusCode":401,"body":json.dumps({"error":"Authentication required"})}
     if not TOKEN:
         return {"statusCode":500,"body":json.dumps({"error":"GITHUB_TOKEN is not configured"})}
     try:
