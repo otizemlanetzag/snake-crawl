@@ -5,6 +5,7 @@ from html.parser import HTMLParser
 from urllib.parse import urljoin, urldefrag, urlparse
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
+from .security import safe_public_url, valid_session
 
 USER_AGENT = "SnakeCrawl/1.0 (+https://github.com/otizemlanetzag/snake-crawl)"
 
@@ -42,6 +43,8 @@ def row(url, final_url, status, ctype, title="", desc="", text="", links=None, d
 
 def crawl_one(url, max_depth, same_domain, seed_host):
     url=normalize(url)
+    if url and not safe_public_url(url):
+        return row(url,url,"blocked","",text="Private or local address blocked"),[]
     if not url:return row(url or "",url or "","error","error",text="Invalid URL"),[]
     if same_domain and urlparse(url).netloc!=seed_host:return row(url,url,"blocked","",text="Outside selected domain"),[]
     try:
@@ -65,6 +68,8 @@ def crawl_one(url, max_depth, same_domain, seed_host):
 def handler(request):
     if request.method!="POST":
         return {"statusCode":405,"headers":{"Content-Type":"application/json"},"body":json.dumps({"error":"POST only"})}
+    if not valid_session(request):
+        return {"statusCode":401,"headers":{"Content-Type":"application/json","Cache-Control":"no-store"},"body":json.dumps({"error":"Authentication required"})}
     try:
         body=request.body if isinstance(request.body,dict) else json.loads(request.body or "{}")
         urls=body.get("urls",[])
