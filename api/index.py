@@ -1,5 +1,6 @@
 import json
 from http.server import BaseHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
 
 from api.auth import _handle_request as auth_request
 from api.crawl import _handle_request as crawl_request
@@ -15,7 +16,9 @@ ROUTES = {
 
 class handler(BaseHTTPRequestHandler):
     def _dispatch(self):
-        path = self.path.split("?", 1)[0].rstrip("/") or "/"
+        qs = parse_qs(urlparse(self.path).query)
+        forwarded = qs.get("path", [""])[0].strip("/")
+        path = "/api/" + forwarded if forwarded else urlparse(self.path).path.rstrip("/") or "/"
         target = ROUTES.get(path)
         if target is None:
             self.send_response(404)
