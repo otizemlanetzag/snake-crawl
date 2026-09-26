@@ -86,6 +86,9 @@ def handler(request):
     except Exception as e:
         return {"statusCode":500,"headers":{"Content-Type":"application/json"},"body":json.dumps({"error":str(e)})}
 
-# Vercel Python entrypoint
+# Vercel Python entrypoints
 def main(request):
     return handler(request)
+
+# Compatibility aliases for Vercel Python runtime detection.
+app = handler
