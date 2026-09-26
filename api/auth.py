@@ -1,5 +1,6 @@
 import json
 import os
+from .security import session_cookie
 from pathlib import Path
 
 def _secret():
@@ -23,7 +24,7 @@ def main(request):
         ok = bool(secret) and supplied == secret and secret != "CHANGE_THIS_SECRET_CODE"
         return {
             "statusCode":200 if ok else 401,
-            "headers":{"Content-Type":"application/json","Cache-Control":"no-store"},
+            "headers":{"Content-Type":"application/json","Cache-Control":"no-store","Set-Cookie":session_cookie() if ok else ""},
             "body":json.dumps({"authenticated":ok})
         }
     except Exception:
