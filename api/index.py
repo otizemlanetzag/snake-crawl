@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import Response, FileResponse
+from fastapi.responses import Response, FileResponse, PlainTextResponse
 from pathlib import Path
 
 from api.auth import _handle_request as auth_request
@@ -12,6 +12,10 @@ app = FastAPI()
 @app.get("/", include_in_schema=False)
 def home():
     return FileResponse(Path(__file__).resolve().parent.parent / "index.html", media_type="text/html")
+
+@app.get("/google6a2c4be352a15be8.html", include_in_schema=False)
+def google_verification():
+    return PlainTextResponse("google-site-verification: google6a2c4be352a15be8.html")
 
 ROUTES = {
     "/api/auth": auth_request,
