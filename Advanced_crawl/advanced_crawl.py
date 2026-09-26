@@ -1,4 +1,4 @@
-"""Advanced discovery crawler for Snake Crawl."""
+"""Bounded domain-discovery crawler for Snake Crawl."""
 import csv
 import json
 import random
@@ -46,36 +46,32 @@ def fetch_candidate(url):
     except Exception as exc:
         return {"url": url, "status": "error", "error": str(exc)}
 
-def handler(request):
-    if getattr(request, "method", "POST") != "POST":
-        return _response({"error": "POST required"}, 405)
-    try:
-        payload = request.body() if hasattr(request, "body") else {}
-        if isinstance(payload, bytes):
-            payload = payload.decode("utf-8")
-        if isinstance(payload, str):
-            payload = json.loads(payload or "{}")
-        payload = payload or {}
-        count = max(1, min(MAX_BATCH, int(payload.get("count", 5))))
-        max_chars = max(1, min(20, int(payload.get("max_characters", 20))))
-        tlds = _iana_tlds()
-        results = []
-        seen = set()
-        for _ in range(count):
+def discover_batch(payload):
+    payload = payload or {}
+    count = max(1, min(MAX_BATCH, int(payload.get("count", 5))))
+    max_chars = max(1, min(20, int(payload.get("max_characters", 20))))
+    tlds = _iana_tlds()
+    results = []
+    seen = set()
+    for _ in range(count):
+        url = make_candidate(tlds, max_chars)
+        while url in seen:
             url = make_candidate(tlds, max_chars)
-            while url in seen:
-                url = make_candidate(tlds, max_chars)
-            seen.add(url)
-            results.append(fetch_candidate(url))
-        return _response({"results": results, "tested": len(results),
-                          "found": sum(x.get("status") == 200 for x in results)})
-    except Exception as exc:
-        return _response({"error": str(exc)}, 500)
+        seen.add(url)
+        results.append(fetch_candidate(url))
+    return {"results": results, "tested": len(results),
+            "found": sum(x.get("status") == 200 for x in results)}
 
-def _response(data, status=200):
-    return {"statusCode": status,
-            "headers": {"Content-Type": "application/json; charset=utf-8"},
-            "body": json.dumps(data, ensure_ascii=False)}
+def handle_payload(body):
+    try:
+        payload = body if isinstance(body, dict) else json.loads(body or "{}")
+        return {"statusCode": 200,
+                "headers": {"Content-Type": "application/json; charset=utf-8"},
+                "body": json.dumps(discover_batch(payload), ensure_ascii=False)}
+    except Exception as exc:
+        return {"statusCode": 500,
+                "headers": {"Content-Type": "application/json; charset=utf-8"},
+                "body": json.dumps({"error": str(exc)})}
 
 def write_csv(rows, path="DATA.CSV"):
     fields = ["url", "final_url", "status", "content_type", "content"]
@@ -84,5 +80,3 @@ def write_csv(rows, path="DATA.CSV"):
         writer.writeheader()
         writer.writerows({f: row.get(f, "") for f in fields} for row in rows)
 
-if __name__ == "__main__":
-    print("Use this crawler through the Vercel API endpoint.")
