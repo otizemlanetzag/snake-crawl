@@ -1,3 +1,9 @@
 {
-  "version": 2
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/auth", "destination": "/api/index?path=auth" },
+    { "source": "/api/crawl", "destination": "/api/index?path=crawl" },
+    { "source": "/api/advanced", "destination": "/api/index?path=advanced" },
+    { "source": "/api/save_csv", "destination": "/api/index?path=save_csv" }
+  ]
 }
