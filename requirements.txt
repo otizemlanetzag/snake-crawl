@@ -1,1 +1,1 @@
-# Snake Crawl intentionally uses Python's standard library only.
+fastapi>=0.115,<1
