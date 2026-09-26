@@ -9,12 +9,13 @@ from api.security import safe_public_url
 
 DEFAULT_MAX_SITES = 100
 MAX_BATCH = 10
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 OPR/120.0.0.0"
 REQUEST_TIMEOUT = 5
 KEYS = string.ascii_lowercase + string.digits + "-"
 
 def _iana_tlds():
     req = urllib.request.Request("https://data.iana.org/TLD/tlds-alpha-by-domain.txt",
-        headers={"User-Agent": "Snake-Crawl/1.0"})
+        headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as response:
         text = response.read().decode("utf-8", errors="replace")
     return [line.strip().lower() for line in text.splitlines()
