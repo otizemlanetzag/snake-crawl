@@ -1,11 +1,12 @@
-import json
-from http.server import BaseHTTPRequestHandler
-from urllib.parse import urlparse, parse_qs
+from fastapi import FastAPI, Request
+from fastapi.responses import Response
 
 from api.auth import _handle_request as auth_request
 from api.crawl import _handle_request as crawl_request
 from api.advanced import _handle_request as advanced_request
 from api.save_csv import _handle_request as save_request
+
+app = FastAPI()
 
 ROUTES = {
     "/api/auth": auth_request,
@@ -14,37 +15,31 @@ ROUTES = {
     "/api/save_csv": save_request,
 }
 
-class handler(BaseHTTPRequestHandler):
-    def _dispatch(self):
-        qs = parse_qs(urlparse(self.path).query)
-        forwarded = qs.get("path", [""])[0].strip("/")
-        path = "/api/" + forwarded if forwarded else urlparse(self.path).path.rstrip("/") or "/"
-        target = ROUTES.get(path)
-        if target is None:
-            self.send_response(404)
-            self.send_header("Content-Type", "application/json")
-            self.end_headers()
-            self.wfile.write(b'{"error":"Unknown API endpoint"}')
-            return
+async def dispatch(path: str, request: Request):
+    target = ROUTES.get(path.rstrip("/"))
+    if target is None:
+        return Response(
+            content='{"error":"Unknown API endpoint"}',
+            status_code=404,
+            media_type="application/json",
+        )
 
-        length = int(self.headers.get("Content-Length", "0") or 0)
-        body = self.rfile.read(length).decode("utf-8", errors="replace") if length else ""
-        request = type("Request", (), {
-            "method": self.command,
-            "headers": self.headers,
-            "body": body,
-        })()
-        result = target(request)
+    body = await request.body()
+    proxy = type("Request", (), {
+        "method": request.method,
+        "headers": request.headers,
+        "body": body.decode("utf-8", errors="replace"),
+    })()
+    result = target(proxy)
 
-        self.send_response(result.get("statusCode", 500))
-        for key, value in result.get("headers", {}).items():
-            if value:
-                self.send_header(key, value)
-        self.end_headers()
-        self.wfile.write(result.get("body", "").encode("utf-8"))
+    headers = result.get("headers", {})
+    return Response(
+        content=result.get("body", ""),
+        status_code=result.get("statusCode", 500),
+        headers={k: v for k, v in headers.items() if v},
+        media_type=None,
+    )
 
-    def do_POST(self):
-        self._dispatch()
-
-    def do_GET(self):
-        self._dispatch()
+@app.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"])
+async def api_route(path: str, request: Request):
+    return await dispatch("/api/" + path, request)
