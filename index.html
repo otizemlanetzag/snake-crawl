@@ -7,16 +7,25 @@ header{padding:30px 7%;background:#efeae0;border-bottom:1px solid #c2a67d}h1{mar
 main{max-width:1050px;margin:28px auto;padding:0 18px}.card{background:#fffaf2;border:1px solid #c2a67d;border-radius:16px;padding:22px;margin-bottom:18px}
 .grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px}label{display:block;font-size:13px;font-weight:700;margin:0 0 6px}
 input{width:100%;padding:11px;border:1px solid #c2a67d;border-radius:9px;background:white;font:inherit}
-.actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}button,.download{border:0;border-radius:10px;padding:12px 18px;font:inherit;font-weight:700;cursor:pointer;background:#d2b48c;color:#3e2723;text-decoration:none}
+.actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}button,.download,.repo-link{border:0;border-radius:10px;padding:12px 18px;font:inherit;font-weight:700;cursor:pointer;background:#d2b48c;color:#3e2723;text-decoration:none}
 button.stop{background:#b94a48;color:white}button:disabled{opacity:.5;cursor:not-allowed}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .stat{background:#efeae0;border:1px solid #c2a67d;border-radius:12px;padding:14px}.num{font-size:25px;font-weight:800}.muted{opacity:.7;font-size:13px}
 .bar{height:9px;background:#efeae0;border-radius:8px;overflow:hidden;margin-top:15px}.fill{height:100%;width:0;background:#8b6b45;transition:.25s}
 #log{white-space:pre-wrap;max-height:230px;overflow:auto;font-size:13px}.ok{color:#496b45}.err{color:#9d3d39}
 #gate{max-width:500px;margin:90px auto}.gate-error{color:#9d3d39;min-height:20px}
 .hidden{display:none}@media(max-width:800px){.grid,.stats{grid-template-columns:1fr 1fr}}@media(max-width:550px){.grid,.stats{grid-template-columns:1fr}}
- .tabs{display:flex;gap:8px;margin-bottom:18px}.tab.active{background:#d2b48c}.panel{display:none}.panel.active{display:block}\n</style></head>
+.tabs{display:flex;gap:8px;margin-bottom:18px}.tab.active{background:#d2b48c}.panel{display:none}.panel.active{display:block}
+</style></head>
 <body>
 <header><h1>🐍 Snake Crawl</h1><div class="muted">Advanced web crawler · Control Panel</div></header>
+
+<main>
+<div class="card">
+<h2>About Snake Crawl</h2>
+<p class="muted">Snake Crawl is an open-source web crawler for discovering and collecting web pages, links, metadata, and readable content. It includes a normal seed-based crawler and an advanced discovery mode, with crawl results that can be saved to DATA.CSV.</p>
+<a class="repo-link" href="https://github.com/otizemlanetzag/snake-crawl" target="_blank" rel="noopener noreferrer">View Snake Crawl on GitHub</a>
+</div>
+</main>
 
 <main id="gate">
 <div class="card">
@@ -114,7 +123,7 @@ $("form").onsubmit=async e=>{
    }
   }catch(err){log("REQUEST ERROR: "+err.message,"err");break}
   stats();
-  if(rows.length){try{await fetch("/api/save_csv",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({rows})})}catch(err){log("DATA.CSV SAVE ERROR: "+err.message,"err")}}
+  if(rows){try{await fetch("/api/save_csv",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({rows})})}catch(err){log("DATA.CSV SAVE ERROR: "+err.message,"err")}}
   await new Promise(r=>setTimeout(r,delay*1000));
  }
  running=false;$("start").disabled=false;$("stop").disabled=true;$("message").textContent=stopRequested?"Stopped":"Completed";
@@ -133,4 +142,5 @@ $("advTested").textContent=advRows.length;$("advFound").textContent=advRows.filt
 }catch(err){const line=document.createElement("div");line.textContent="REQUEST ERROR: "+err.message;line.className="err";$("advLog").prepend(line);break}if(!advStop)await new Promise(r=>setTimeout(r,delay*1000))}
 if(advRows.length){try{await fetch("/api/save_csv",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({rows:advRows})})}catch(err){const line=document.createElement("div");line.textContent="DATA.CSV SAVE ERROR: "+err.message;line.className="err";$("advLog").prepend(line)}}
 advRunning=false;$("advStart").disabled=false;$("advStop").disabled=true;$("advMessage").textContent=advStop?"Stopped":"Completed";
-if(advRows.length){const fields=["url","final_url","status","content_type","content"];const esc=v=>String(v??"").replaceAll('"','""').replace(/[\r\n]+/g," ");const out="\ufeff"+[fields,...advRows.map(r=>fields.map(f=>r[f]??""))].map(a=>a.map(v=>'"'+esc(v)+'"').join(",")).join("\r\n");$("advDownload").href=URL.createObjectURL(new Blob([out],{type:"text/csv;charset=utf-8"}));$("advDownload").download="Advanced_DATA.CSV";$("advDownload").hidden=false}};</script></body></html>
+if(advRows.length){const fields=["url","final_url","status","content_type","content"];const esc=v=>String(v??"").replaceAll('"','""').replace(/[\r\n]+/g," ");const out="\ufeff"+[fields,...advRows.map(r=>fields.map(f=>r[f]??""))].map(a=>a.map(v=>'"'+esc(v)+'"').join(",")).join("\r\n");$("advDownload").href=URL.createObjectURL(new Blob([out],{type:"text/csv;charset=utf-8"}));$("advDownload").download="Advanced_DATA.CSV";$("advDownload").hidden=false}};
+</script></body></html>
