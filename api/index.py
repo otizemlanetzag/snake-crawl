@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import Response
+from fastapi.responses import Response, FileResponse
+from pathlib import Path
 
 from api.auth import _handle_request as auth_request
 from api.crawl import _handle_request as crawl_request
@@ -7,6 +8,10 @@ from api.advanced import _handle_request as advanced_request
 from api.save_csv import _handle_request as save_request
 
 app = FastAPI()
+
+@app.get("/", include_in_schema=False)
+def home():
+    return FileResponse(Path(__file__).resolve().parent.parent / "index.html", media_type="text/html")
 
 ROUTES = {
     "/api/auth": auth_request,
