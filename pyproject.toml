@@ -3,7 +3,7 @@ name = "snake-crawl"
 version = "0.1.0"
 description = "Snake Crawl web crawler"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = ["fastapi"]
 
 [tool.vercel]
-entrypoint = "api.index:handler"
+entrypoint = "api.index:app"
