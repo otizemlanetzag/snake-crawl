@@ -10,7 +10,7 @@ REPO = os.environ.get("GITHUB_REPOSITORY", "otizemlanetzag/snake-crawl")
 BRANCH = os.environ.get("GITHUB_BRANCH", "main")
 TOKEN = os.environ.get("GITHUB_TOKEN", "")
 
-FIELDS = ["url","final_url","status","content_type","title","description","text","links","depth","crawled_at"]
+FIELDS = ["url","final_url","status","content_type","title","description","text","links","depth","crawled_at","content"]
 
 def _github(path, method="GET", body=None):
     url = "https://api.github.com/repos/" + REPO + "/contents/" + path
