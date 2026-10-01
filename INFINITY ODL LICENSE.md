@@ -58,12 +58,20 @@
 - The Data is provided "as is," without warranty of any kind, express or implied.
 
 ---
-## **5. Liability**
+## **5. Non-Commercial Company Product Access**
+
+A company that is not a Commercial Company and provides a product or service using Data under this License must make the full functionality of that product or service available to users without requiring payment.
+
+The company may accept voluntary donations or receive money solely for necessary operating expenses, provided that access to the full product or service is not conditioned on payment.
+
+---
+
+## **6. Liability**
 
 - Users are solely responsible for ensuring compliance with this License and applicable laws.
 - The Original Creator is not liable for any damages arising from the use, modification, or redistribution of the Data.
 
 ---
-## **6. Termination**
+## **7. Termination**
 
 - This License remains in effect indefinitely unless the user violates its terms. In such cases, the License is automatically terminated without notice.
