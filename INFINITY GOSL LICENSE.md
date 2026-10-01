@@ -37,5 +37,11 @@ Money collected only to cover the permitted operating expenses described above d
 
 This restriction applies regardless of whether the Software is provided directly to customers, embedded in another product or service, offered through a hosted service, or used internally by the Commercial Company.
 
-## 5. Disclaimer of Warranty
+## 5. Non-Commercial Company Product Access
+
+A company that is not a Commercial Company and provides a product or service using the Software must make the full functionality of that product or service available to users without requiring payment.
+
+The company may accept voluntary donations or receive money solely for the permitted operating expenses described in Section 4, provided that access to the full product or service is not conditioned on payment.
+
+## 6. Disclaimer of Warranty
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
